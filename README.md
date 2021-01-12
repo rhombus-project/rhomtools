@@ -1,78 +1,78 @@
-# partyman
+# rhomtools
 
-Particl wallet/daemon management utilities - version 0.11
+Rhombus wallet/daemon management utilities - version 0.11
 
-* This script installs, updates, and manages single-user particl daemons and wallets
+* This script installs, updates, and manages single-user rhombus daemons and wallets
 * This script provides the ability to create a new wallet and manage staking node (cold staking functionality)
 
 # Install/Usage
 
-To install partyman do:
+To install rhomtools do:
 
     sudo apt-get install python git unzip pv jq dnsutils
-    cd ~ && git clone https://github.com/dasource/partyman
+    cd ~ && git clone https://github.com/dasource/rhomtools
 
-To get the current status of particld, do:
+To get the current status of rhombusd, do:
 
-    partyman/partyman status
+    rhomtools/rhomtools status
 
-To get the RPC command `getinfo` and `getwalletinfo` from particld, do:
+To get the RPC command `getinfo` and `getwalletinfo` from rhombusd, do:
 
-    partyman/partyman getinfo
+    rhomtools/rhomtools getinfo
 
 
 
-To perform a new install of particl, do:
+To perform a new install of rhombus, do:
 
-    partyman/partyman install
+    rhomtools/rhomtools install
 
-To update to the latest version of particl, do:
+To update to the latest version of rhombus, do:
 
-    partyman/partyman update
+    rhomtools/rhomtools update
 
-To overwrite an existing particl install, do:
+To overwrite an existing rhombus install, do:
 
-    partyman/partyman reinstall
+    rhomtools/rhomtools reinstall
 
-To restart (or start) particld, do:
+To restart (or start) rhombusd, do:
 
-    partyman/partyman restart
+    rhomtools/rhomtools restart
 
 
 
 To create a new wallet on this staking node, do:
 
-    partyman/partyman stakingnode init
+    rhomtools/rhomtools stakingnode init
 
 To create a new public key on this staking node, do:
 
-    partyman/partyman stakingnode new
+    rhomtools/rhomtools stakingnode new
 
 To get a list of public keys on this staking node, do:
 
-    partyman/partyman stakingnode
+    rhomtools/rhomtools stakingnode
 
 To get staking stats for this staking node, do:
 
-    partyman/partyman stakingnode stats
+    rhomtools/rhomtools stakingnode stats
 
 To configure the reward address for this staking node, do:
 
-    partyman/partyman stakingnode rewardaddress
+    rhomtools/rhomtools stakingnode rewardaddress
 
 To configure the smsg fee rate target for this staking node, do:
 
-    partyman/partyman stakingnode smsgfeeratetarget
+    rhomtools/rhomtools stakingnode smsgfeeratetarget
 
 
 
 To install an create firewall/ufw rules to restrict access to only PORTS 22, 8080, 51738 and 51938, do:
 
-    partyman/partyman firewall
+    rhomtools/rhomtools firewall
 
 To disable the firewall/ufw and reset the rules, do:
 
-    partyman/partyman firewall reset
+    rhomtools/rhomtools firewall reset
 
 
 
@@ -80,23 +80,23 @@ To disable the firewall/ufw and reset the rules, do:
 
 ## install
 
-"partyman install" downloads and initializes a fresh particl install into ~/.particl
+"rhomtools install" downloads and initializes a fresh rhombus install into ~/.rhombus
 unless already present
 
 ## reinstall
 
-"partyman reinstall" downloads and overwrites existing particl executables, even if
+"rhomtools reinstall" downloads and overwrites existing rhombus executables, even if
 already present
 
 ## restart
 
-"partyman restart [now]" restarts (or starts) particld. Searches for particl-cli/particld
-the current directory, ~/.particl, and $PATH. It will prompt to restart if not
+"rhomtools restart [now]" restarts (or starts) rhombusd. Searches for rhombus-cli/rhombusd
+the current directory, ~/.rhombus, and $PATH. It will prompt to restart if not
 given the optional 'now' argument.
 
 ## status
 
-"partyman status" interrogates the locally running particld and displays its status
+"rhomtools status" interrogates the locally running rhombusd and displays its status
 
 # Dependencies
 
@@ -108,5 +108,5 @@ given the optional 'now' argument.
 * python
 * unzip
 * jq
-* particld, particl-cli
+* rhombusd, rhombus-cli
 * dnsutils

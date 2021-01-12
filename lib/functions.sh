@@ -20,8 +20,8 @@ LC_NUMERIC="en_US.UTF-8"
 PARTYD_RUNNING=0
 PARTYD_RESPONDING=0
 PARTYMAN_VERSION=$(cat "$PARTYMAN_GITDIR/VERSION")
-DATA_DIR="$HOME/.particl"
-DOWNLOAD_PAGE="https://github.com/particl/particl-core/releases"
+DATA_DIR="$HOME/.rhombus"
+DOWNLOAD_PAGE="https://github.com/rhombus/rhombus-core/releases"
 #PARTYMAN_CHECKOUT=$(GIT_DIR=$PARTYMAN_GITDIR/.git GIT_WORK_TREE=$PARTYMAN_GITDIR git describe --dirty | sed -e "s/^.*-\([0-9]\+-g\)/\1/" )
 #if [ "$PARTYMAN_CHECKOUT" == "v"$PARTYMAN_VERSION ]; then
 #    PARTYMAN_CHECKOUT=""
@@ -29,7 +29,7 @@ DOWNLOAD_PAGE="https://github.com/particl/particl-core/releases"
 #    PARTYMAN_CHECKOUT=" ("$PARTYMAN_CHECKOUT")"
 #fi
 
-curl_cmd="timeout 7 curl -4 -s -L -A partyman/$PARTYMAN_VERSION"
+curl_cmd="timeout 7 curl -4 -s -L -A rhomtools/$PARTYMAN_VERSION"
 wget_cmd='wget -4 --no-check-certificate -q'
 
 
@@ -185,17 +185,17 @@ _check_dependencies() {
     fi
 }
 
-# attempt to locate particl-cli executable.
-# search current dir, ~/.particl, `which particl-cli` ($PATH), finally recursive
-_find_particl_directory() {
+# attempt to locate rhombus-cli executable.
+# search current dir, ~/.rhombus, `which rhombus-cli` ($PATH), finally recursive
+_find_rhombus_directory() {
 
     INSTALL_DIR=''
 
-    # particl-cli in PATH
+    # rhombus-cli in PATH
 
-    if [ -n "$(type -P particl-cli 2>/dev/null)" ] ; then
-        INSTALL_DIR=$(readlink -f "$(type -P particl-cli)")
-        INSTALL_DIR=${INSTALL_DIR%%/particl-cli*};
+    if [ -n "$(type -P rhombus-cli 2>/dev/null)" ] ; then
+        INSTALL_DIR=$(readlink -f "$(type -P rhombus-cli)")
+        INSTALL_DIR=${INSTALL_DIR%%/rhombus-cli*};
 
         #TODO prompt for single-user or multi-user install
 
@@ -205,55 +205,55 @@ _find_particl_directory() {
 
             # if not run as root
             if [ $EUID -ne 0 ] ; then
-                die "\n${messages["exec_found_in_system_dir"]} $INSTALL_DIR${messages["run_partyman_as_root"]} ${messages["exiting"]}"
+                die "\n${messages["exec_found_in_system_dir"]} $INSTALL_DIR${messages["run_rhomtools_as_root"]} ${messages["exiting"]}"
             fi
         fi
 
-    # particl-cli not in PATH
+    # rhombus-cli not in PATH
 
         # check current directory
-    elif [ -e ./particl-cli ] ; then
+    elif [ -e ./rhombus-cli ] ; then
         INSTALL_DIR='.' ;
 
-        # check ~/.particl directory
-    elif [ -e "$HOME/.particl/particl-cli" ] ; then
-        INSTALL_DIR="$HOME/.particl" ;
+        # check ~/.rhombus directory
+    elif [ -e "$HOME/.rhombus/rhombus-cli" ] ; then
+        INSTALL_DIR="$HOME/.rhombus" ;
 
-    elif [ -e "$HOME/particlcore/particl-cli" ] ; then
-        INSTALL_DIR="$HOME/particlcore" ;
+    elif [ -e "$HOME/rhombuscore/rhombus-cli" ] ; then
+        INSTALL_DIR="$HOME/rhombuscore" ;
     fi
 
     if [ -n "$INSTALL_DIR" ]; then
         INSTALL_DIR=$(readlink -f "$INSTALL_DIR") 2>/dev/null
         if [ ! -e "$INSTALL_DIR" ]; then
-            echo -e "${C_RED}${messages["particlcli_not_found_in_cwd"]}, ~/particlcore, or \$PATH. -- ${messages["exiting"]}$C_NORM"
+            echo -e "${C_RED}${messages["rhombuscli_not_found_in_cwd"]}, ~/rhombuscore, or \$PATH. -- ${messages["exiting"]}$C_NORM"
             exit 1
         fi
     else
-        echo -e "${C_RED}${messages["particlcli_not_found_in_cwd"]}, ~/particlcore, or \$PATH. -- ${messages["exiting"]}$C_NORM"
+        echo -e "${C_RED}${messages["rhombuscli_not_found_in_cwd"]}, ~/rhombuscore, or \$PATH. -- ${messages["exiting"]}$C_NORM"
         exit 1
     fi
 
-    PARTY_CLI="$INSTALL_DIR/particl-cli"
+    RHOM_CLI="$INSTALL_DIR/rhombus-cli"
 
-    # check INSTALL_DIR has particld and particl-cli
-    if [ ! -e "$INSTALL_DIR/particld" ]; then
-        echo -e "${C_RED}${messages["particld_not_found"]} $INSTALL_DIR -- ${messages["exiting"]}$C_NORM"
+    # check INSTALL_DIR has rhombusd and rhombus-cli
+    if [ ! -e "$INSTALL_DIR/rhombusd" ]; then
+        echo -e "${C_RED}${messages["rhombusd_not_found"]} $INSTALL_DIR -- ${messages["exiting"]}$C_NORM"
         exit 1
     fi
 
-    if [ ! -e "$PARTY_CLI" ]; then
-        echo -e "${C_RED}${messages["particlcli_not_found"]} $INSTALL_DIR -- ${messages["exiting"]}$C_NORM"
+    if [ ! -e "$RHOM_CLI" ]; then
+        echo -e "${C_RED}${messages["rhombuscli_not_found"]} $INSTALL_DIR -- ${messages["exiting"]}$C_NORM"
         exit 1
     fi
 
 }
 
 
-_check_partyman_updates() {
-    GITHUB_PARTYMAN_VERSION=$( "$curl_cmd" -i https://raw.githubusercontent.com/dasource/partyman/master/VERSION 2>/dev/null | head -n 1 | cut -d$' ' -f2 )
+_check_rhomtools_updates() {
+    GITHUB_PARTYMAN_VERSION=$( "$curl_cmd" -i https://raw.githubusercontent.com/dasource/rhomtools/master/VERSION 2>/dev/null | head -n 1 | cut -d$' ' -f2 )
     if [ "$GITHUB_PARTYMAN_VERSION" == 200 ]; then # check to make sure github is returning the data
-        GITHUB_PARTYMAN_VERSION=$( $curl_cmd https://raw.githubusercontent.com/dasource/partyman/master/VERSION 2>/dev/null )
+        GITHUB_PARTYMAN_VERSION=$( $curl_cmd https://raw.githubusercontent.com/dasource/rhomtools/master/VERSION 2>/dev/null )
         if [ -n "$GITHUB_PARTYMAN_VERSION" ] && [ "$PARTYMAN_VERSION" != "$GITHUB_PARTYMAN_VERSION" ]; then
             echo -e "\n"
             echo -e "${C_RED}${0##*/} ${messages["requires_updating"]} $C_GREEN$GITHUB_PARTYMAN_VERSION$C_RED\n${messages["requires_sync"]}$C_NORM\n"
@@ -296,7 +296,7 @@ _get_platform_info() {
             ;;
         *)
             err "${messages["err_unknown_platform"]} $PLATFORM"
-            err "${messages["err_partyman_supports"]}"
+            err "${messages["err_rhomtools_supports"]}"
             die "${messages["exiting"]}"
             ;;
     esac
@@ -305,12 +305,12 @@ _get_platform_info() {
 _get_versions() {
     _get_platform_info
 
-    if [ -z "$PARTY_CLI" ]; then PARTY_CLI='echo'; fi
-    CURRENT_VERSION=$( $PARTY_CLI --version | grep -m1 Particl | sed 's/\Particl Core RPC client version v//g' | sed 's/\.[^.]*$//' 2>/dev/null ) 2>/dev/null
+    if [ -z "$RHOM_CLI" ]; then RHOM_CLI='echo'; fi
+    CURRENT_VERSION=$( $RHOM_CLI --version | grep -m1 Rhombus | sed 's/\Rhombus Core RPC client version v//g' | sed 's/\.[^.]*$//' 2>/dev/null ) 2>/dev/null
 
     unset LATEST_VERSION
     LVCOUNTER=0
-    RELEASES=$( $curl_cmd https://api.github.com/repos/particl/particl-core/releases )
+    RELEASES=$( $curl_cmd https://api.github.com/repos/rhombus/rhombus-core/releases )
     while [ -z "$LATEST_VERSION" ] && [ $LVCOUNTER -lt 5 ]; do
         RELEASE=$( echo "$RELEASES" | jq -r .[$LVCOUNTER] 2>/dev/null )
         PR=$( echo "$RELEASE" | jq .prerelease)
@@ -325,36 +325,36 @@ _get_versions() {
         die "\n${messages["err_could_not_get_version"]} $DOWNLOAD_PAGE -- ${messages["exiting"]}"
     fi
 
-    DOWNLOAD_URL="https://github.com/particl/particl-core/releases/download/v${LATEST_VERSION}/particl-${LATEST_VERSION}-${ARCH}.tar.gz"
-    DOWNLOAD_FILE="particl-${LATEST_VERSION}-${ARCH}.tar.gz"
+    DOWNLOAD_URL="https://github.com/rhombus/rhombus-core/releases/download/v${LATEST_VERSION}/rhombus-${LATEST_VERSION}-${ARCH}.tar.gz"
+    DOWNLOAD_FILE="rhombus-${LATEST_VERSION}-${ARCH}.tar.gz"
 
 }
 
-_check_particld_state() {
-    _get_particld_proc_status
+_check_rhombusd_state() {
+    _get_rhombusd_proc_status
     PARTYD_RUNNING=0
     PARTYD_RESPONDING=0
     if [ "$PARTYD_HASPID" -gt 0 ] && [ "$PARTYD_PID" -gt 0 ]; then
         PARTYD_RUNNING=1
     fi
-    if [ "$( $PARTY_CLI help 2>/dev/null | wc -l )" -gt 0 ]; then
+    if [ "$( $RHOM_CLI help 2>/dev/null | wc -l )" -gt 0 ]; then
         PARTYD_RESPONDING=1
-        PARTYD_WALLETSTATUS=$( "$PARTY_CLI" getwalletinfo | jq -r .encryptionstatus )
-        PARTYD_WALLET=$( "$PARTY_CLI" getwalletinfo | jq -r .hdmasterkeyid )
+        PARTYD_WALLETSTATUS=$( "$RHOM_CLI" getwalletinfo | jq -r .encryptionstatus )
+        PARTYD_WALLET=$( "$RHOM_CLI" getwalletinfo | jq -r .hdmasterkeyid )
         if [ "$PARTYD_WALLET"  == "null" ]; then
-            PARTYD_WALLET=$( "$PARTY_CLI" getwalletinfo | jq -r .hdseedid )
+            PARTYD_WALLET=$( "$RHOM_CLI" getwalletinfo | jq -r .hdseedid )
         fi
-        PARTYD_TBALANCE=$( "$PARTY_CLI" getwalletinfo | jq -r .total_balance )
+        PARTYD_TBALANCE=$( "$RHOM_CLI" getwalletinfo | jq -r .total_balance )
     fi
 }
 
-restart_particld(){
+restart_rhombusd(){
 
     if [ "$PARTYD_RUNNING" == 1 ]; then
-        pending " --> ${messages["stopping"]} particld. ${messages["please_wait"]}"
-        $PARTY_CLI stop > /dev/null 2>&1
+        pending " --> ${messages["stopping"]} rhombusd. ${messages["please_wait"]}"
+        $RHOM_CLI stop > /dev/null 2>&1
         sleep 15
-        killall -9 particld particl-shutoff 2>/dev/null
+        killall -9 rhombusd rhombus-shutoff 2>/dev/null
         ok "${messages["done"]}"
         PARTYD_RUNNING=0
     fi
@@ -368,43 +368,43 @@ restart_particld(){
     #    "$DATA_DIR"/peers.dat
     ok "${messages["done"]}"
 
-    pending " --> ${messages["starting_particld"]}"
-    "$INSTALL_DIR/particld" -daemon > /dev/null 2>&1
+    pending " --> ${messages["starting_rhombusd"]}"
+    "$INSTALL_DIR/rhombusd" -daemon > /dev/null 2>&1
     PARTYD_RUNNING=1
     PARTYD_RESPONDING=0
     ok "${messages["done"]}"
 
-    pending " --> ${messages["waiting_for_particld_to_respond"]}"
+    pending " --> ${messages["waiting_for_rhombusd_to_respond"]}"
     echo -en "${C_YELLOW}"
     while [ $PARTYD_RUNNING == 1 ] && [ $PARTYD_RESPONDING == 0 ]; do
         echo -n "."
-        _check_particld_state
+        _check_rhombusd_state
         sleep 5
     done
     if [ $PARTYD_RUNNING == 0 ]; then
-        die "\n - particld unexpectedly quit. ${messages["exiting"]}"
+        die "\n - rhombusd unexpectedly quit. ${messages["exiting"]}"
     fi
     ok "${messages["done"]}"
-    pending " --> particl-cli getinfo"
+    pending " --> rhombus-cli getinfo"
     echo
-    $PARTY_CLI -getinfo
+    $RHOM_CLI -getinfo
     echo
 
 }
 
-install_particld(){
+install_rhombusd(){
 
-    INSTALL_DIR=$HOME/particlcore
-    PARTY_CLI="$INSTALL_DIR/particl-cli"
+    INSTALL_DIR=$HOME/rhombuscore
+    RHOM_CLI="$INSTALL_DIR/rhombus-cli"
 
     if [ -e "$INSTALL_DIR" ] ; then
         die "\n - ${messages["preexisting_dir"]} $INSTALL_DIR ${messages["found"]} ${messages["run_reinstall"]} ${messages["exiting"]}"
     fi
 
     if [ -z "$UNATTENDED" ] ; then
-        if [ "$USER" != "particl" ]; then
+        if [ "$USER" != "rhombus" ]; then
             echo
-            warn "We strongly advise you run this installer under user \"particl\" with sudo access. Are you sure you wish to continue as $USER?"
+            warn "We strongly advise you run this installer under user \"rhombus\" with sudo access. Are you sure you wish to continue as $USER?"
             if ! confirm " [${C_GREEN}y${C_NORM}/${C_RED}N${C_NORM}] $C_CYAN"; then
                 echo -e "${C_RED}${messages["exiting"]}$C_NORM"
                 echo ""
@@ -432,12 +432,12 @@ install_particld(){
     mkdir -p "$INSTALL_DIR"
     mkdir -p "$DATA_DIR"
 
-    if [ ! -e "$DATA_DIR/particl.conf" ] ; then
-        pending " --> ${messages["creating"]} $DATA_DIR/particl.conf... "
+    if [ ! -e "$DATA_DIR/rhombus.conf" ] ; then
+        pending " --> ${messages["creating"]} $DATA_DIR/rhombus.conf... "
 
         while read -r; do
             eval echo "$REPLY"
-        done < "$PARTYMAN_GITDIR/particl.conf.template" > "$DATA_DIR/particl.conf"
+        done < "$PARTYMAN_GITDIR/rhombus.conf.template" > "$DATA_DIR/rhombus.conf"
         ok "${messages["done"]}"
     fi
 
@@ -451,7 +451,7 @@ install_particld(){
     tput sc
     echo -e "$C_CYAN"
     $wget_cmd -O - "$DOWNLOAD_URL" | pv -trep -s27M -w80 -N wallet > "$DOWNLOAD_FILE"
-    $wget_cmd -O - "https://raw.githubusercontent.com/particl/gitian.sigs/master/${LATEST_VERSION}-linux/tecnovert/particl-linux-${LATEST_VERSION}-build.assert" | pv -trep -w80 -N checksums > "${DOWNLOAD_FILE}.DIGESTS.txt"
+    $wget_cmd -O - "https://raw.githubusercontent.com/rhombus/gitian.sigs/master/${LATEST_VERSION}-linux/tecnovert/rhombus-linux-${LATEST_VERSION}-build.assert" | pv -trep -w80 -N checksums > "${DOWNLOAD_FILE}.DIGESTS.txt"
     echo -ne "$C_NORM"
     clear_n_lines 2
     tput rc
@@ -470,7 +470,7 @@ install_particld(){
     SHA256SUM=$( sha256sum "$DOWNLOAD_FILE" )
     SHA256PASS=$( grep -c "$SHA256SUM" "${DOWNLOAD_FILE}.DIGESTS.txt" )
     if [ "$SHA256PASS" -lt 1 ] ; then
-        $wget_cmd -O - https://api.github.com/repos/particl/particl-core/releases | jq -r .[$LVCOUNTER] | jq .body > "${DOWNLOAD_FILE}.DIGESTS2.txt"
+        $wget_cmd -O - https://api.github.com/repos/rhombus/rhombus-core/releases | jq -r .[$LVCOUNTER] | jq .body > "${DOWNLOAD_FILE}.DIGESTS2.txt"
         SHA256DLPASS=$( grep -c "$SHA256SUM" "${DOWNLOAD_FILE}.DIGESTS2.txt" )
         if [ "$SHA256DLPASS" -lt 1 ] ; then
             echo -e " ${C_RED} SHA256 ${messages["checksum"]} ${messages["FAILED"]} ${messages["try_again_later"]} ${messages["exiting"]}$C_NORM"
@@ -489,67 +489,67 @@ install_particld(){
 
     if [ $PARTYD_RUNNING == 1 ]; then
         pending " --> ${messages["stopping"]} partcld. ${messages["please_wait"]}"
-        $PARTY_CLI stop >/dev/null 2>&1
+        $RHOM_CLI stop >/dev/null 2>&1
         sleep 15
-        killall -9 particld particl-shutoff >/dev/null 2>&1
+        killall -9 rhombusd rhombus-shutoff >/dev/null 2>&1
         ok "${messages["done"]}"
     fi
 
     # place it ---------------------------------------------------------------
 
-    mv "particl-$LATEST_VERSION/bin/particld" "particld-$LATEST_VERSION"
-    mv "particl-$LATEST_VERSION/bin/particl-cli" "particl-cli-$LATEST_VERSION"
+    mv "rhombus-$LATEST_VERSION/bin/rhombusd" "rhombusd-$LATEST_VERSION"
+    mv "rhombus-$LATEST_VERSION/bin/rhombus-cli" "rhombus-cli-$LATEST_VERSION"
     if [ $ARM != 1 ];then
-        mv "particl-$LATEST_VERSION/bin/particl-qt" "particl-qt-$LATEST_VERSION"
+        mv "rhombus-$LATEST_VERSION/bin/rhombus-qt" "rhombus-qt-$LATEST_VERSION"
     fi
-    ln -s "particld-$LATEST_VERSION" particld
-    ln -s "particl-cli-$LATEST_VERSION" particl-cli
+    ln -s "rhombusd-$LATEST_VERSION" rhombusd
+    ln -s "rhombus-cli-$LATEST_VERSION" rhombus-cli
     if [ $ARM != 1 ];then
-        ln -s "particl-qt-$LATEST_VERSION" particl-qt
+        ln -s "rhombus-qt-$LATEST_VERSION" rhombus-qt
     fi
 
     # permission it ----------------------------------------------------------
 
     if [ -n "$SUDO_USER" ]; then
-        chown -h "$USER":"$USER" {"$DOWNLOAD_FILE","${DOWNLOAD_FILE}.DIGESTS.txt",particl-cli,particld,particl-qt,particl*"$LATEST_VERSION"}
+        chown -h "$USER":"$USER" {"$DOWNLOAD_FILE","${DOWNLOAD_FILE}.DIGESTS.txt",rhombus-cli,rhombusd,rhombus-qt,rhombus*"$LATEST_VERSION"}
     fi
 
     # purge it ---------------------------------------------------------------
 
-    rm -rf "particl-$LATEST_VERSION"
+    rm -rf "rhombus-$LATEST_VERSION"
 
     # path it ----------------------------------------------------------------
 
     pending " --> adding $INSTALL_DIR PATH to ~/.bash_aliases ... "
     if [ ! -f ~/.bash_aliases ]; then touch ~/.bash_aliases ; fi
-    sed -i.bak -e '/partyman_env/d' ~/.bash_aliases
-    echo "export PATH=$INSTALL_DIR:\$PATH; # partyman_env" >> ~/.bash_aliases
+    sed -i.bak -e '/rhomtools_env/d' ~/.bash_aliases
+    echo "export PATH=$INSTALL_DIR:\$PATH; # rhomtools_env" >> ~/.bash_aliases
     ok "${messages["done"]}"
 
     # autoboot it ------------------------------------------------------------
 
     INIT=$(ps --no-headers -o comm 1)
-    if [ "$INIT" == "systemd" ] && [ "$USER" == "particl" ] && [ -n "$SUDO_USER" ]; then
+    if [ "$INIT" == "systemd" ] && [ "$USER" == "rhombus" ] && [ -n "$SUDO_USER" ]; then
         pending " --> detecting $INIT for auto boot ($USER) ... "
         ok "${messages["done"]}"
-        DOWNLOAD_SERVICE="https://raw.githubusercontent.com/particl/particl-core/master/contrib/init/particld.service"
+        DOWNLOAD_SERVICE="https://raw.githubusercontent.com/rhombus/rhombus-core/master/contrib/init/rhombusd.service"
         pending " --> [systemd] ${messages["downloading"]} ${DOWNLOAD_SERVICE}... "
-        $wget_cmd -O - $DOWNLOAD_SERVICE | pv -trep -w80 -N service > particld.service
-        if [ ! -e particld.service ] ; then
+        $wget_cmd -O - $DOWNLOAD_SERVICE | pv -trep -w80 -N service > rhombusd.service
+        if [ ! -e rhombusd.service ] ; then
            echo -e "${C_RED}error ${messages["downloading"]} file"
-           echo -e "tried to get particld.service$C_NORM"
+           echo -e "tried to get rhombusd.service$C_NORM"
         else
            ok "${messages["done"]}"
         pending " --> [systemd] installing service ... "
-        if sudo cp -rf particld.service /etc/systemd/system/; then
+        if sudo cp -rf rhombusd.service /etc/systemd/system/; then
             ok "${messages["done"]}"
         fi
            pending " --> [systemd] reloading systemd service ... "
         if sudo systemctl daemon-reload; then
             ok "${messages["done"]}"
         fi
-           pending " --> [systemd] enable particld system startup ... "
-        if sudo systemctl enable particld; then
+           pending " --> [systemd] enable rhombusd system startup ... "
+        if sudo systemctl enable rhombusd; then
                ok "${messages["done"]}"
            fi
         fi
@@ -563,34 +563,34 @@ install_particld(){
 
     if [ "$LATEST_VERSION" == "$CURRENT_VERSION" ]; then
         echo -e ""
-        echo -e "${C_GREEN}Particl ${LATEST_VERSION} ${messages["successfully_installed"]}$C_NORM"
+        echo -e "${C_GREEN}Rhombus ${LATEST_VERSION} ${messages["successfully_installed"]}$C_NORM"
 
         echo -e ""
         echo -e "${C_GREEN}${messages["installed_in"]} ${INSTALL_DIR}$C_NORM"
         echo -e ""
-        ls -l --color {"$DOWNLOAD_FILE","${DOWNLOAD_FILE}.DIGESTS.txt",particl-cli,particld,particl-qt,particl*"$LATEST_VERSION"}
+        ls -l --color {"$DOWNLOAD_FILE","${DOWNLOAD_FILE}.DIGESTS.txt",rhombus-cli,rhombusd,rhombus-qt,rhombus*"$LATEST_VERSION"}
         echo -e ""
 
         if [ -n "$SUDO_USER" ]; then
             echo -e "${C_GREEN}Symlinked to: ${LINK_TO_SYSTEM_DIR}$C_NORM"
             echo -e ""
-            ls -l --color "$LINK_TO_SYSTEM_DIR"/{particld,particl-cli}
+            ls -l --color "$LINK_TO_SYSTEM_DIR"/{rhombusd,rhombus-cli}
             echo -e ""
         fi
 
     else
-        echo -e "${C_RED}${messages["particl_version"]} $CURRENT_VERSION ${messages["is_not_uptodate"]} ($LATEST_VERSION) ${messages["exiting"]}$C_NORM"
+        echo -e "${C_RED}${messages["rhombus_version"]} $CURRENT_VERSION ${messages["is_not_uptodate"]} ($LATEST_VERSION) ${messages["exiting"]}$C_NORM"
         exit 1
     fi
 }
 
-update_particld(){
+update_rhombusd(){
 
     if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ] || [ -n "$REINSTALL" ] ; then
 
         if [ -n "$REINSTALL" ];then
             echo -e ""
-            echo -e "$C_GREEN*** ${messages["particl_version"]} $CURRENT_VERSION is up-to-date. ***$C_NORM"
+            echo -e "$C_GREEN*** ${messages["rhombus_version"]} $CURRENT_VERSION is up-to-date. ***$C_NORM"
             echo -e "${messages["latest_version"]} $C_GREEN$LATEST_VERSION$C_NORM"
             echo -e ""
             echo -en
@@ -598,7 +598,7 @@ update_particld(){
             pending "${messages["reinstall_to"]} $INSTALL_DIR$C_NORM?"
         else
             echo -e ""
-            echo -e "$C_RED*** ${messages["newer_particl_available"]} ***$C_NORM"
+            echo -e "$C_RED*** ${messages["newer_rhombus_available"]} ***$C_NORM"
             echo -e ""
             echo -e "${messages["currnt_version"]} $C_RED$CURRENT_VERSION$C_NORM"
             echo -e "${messages["latest_version"]} $C_GREEN$LATEST_VERSION$C_NORM"
@@ -629,7 +629,7 @@ update_particld(){
         tput sc
         echo -e "$C_CYAN"
         $wget_cmd -O - "$DOWNLOAD_URL" | pv -trep -s27M -w80 -N wallet > "$DOWNLOAD_FILE"
-        $wget_cmd -O - "https://raw.githubusercontent.com/particl/gitian.sigs/master/$LATEST_VERSION.0-linux/tecnovert/particl-linux-$LATEST_VERSION-build.assert" | pv -trep -w80 -N checksums > "${DOWNLOAD_FILE}.DIGESTS.txt"
+        $wget_cmd -O - "https://raw.githubusercontent.com/rhombus/gitian.sigs/master/$LATEST_VERSION.0-linux/tecnovert/rhombus-linux-$LATEST_VERSION-build.assert" | pv -trep -w80 -N checksums > "${DOWNLOAD_FILE}.DIGESTS.txt"
         echo -ne "$C_NORM"
         clear_n_lines 2
         tput rc
@@ -648,7 +648,7 @@ update_particld(){
         SHA256SUM=$( sha256sum "$DOWNLOAD_FILE" )
         SHA256PASS=$( grep -c "$SHA256SUM" "${DOWNLOAD_FILE}.DIGESTS.txt" )
         if [ "$SHA256PASS" -lt 1 ] ; then
-            $wget_cmd -O - https://api.github.com/repos/particl/particl-core/releases | jq -r .[$LVCOUNTER] | jq .body > "${DOWNLOAD_FILE}.DIGESTS2.txt"
+            $wget_cmd -O - https://api.github.com/repos/rhombus/rhombus-core/releases | jq -r .[$LVCOUNTER] | jq .body > "${DOWNLOAD_FILE}.DIGESTS2.txt"
             SHA256DLPASS=$( grep -c "$SHA256SUM" "${DOWNLOAD_FILE}.DIGESTS2.txt")
             if [ "$SHA256DLPASS" -lt 1 ] ; then
                 echo -e " ${C_RED} SHA256 ${messages["checksum"]} ${messages["FAILED"]} ${messages["try_again_later"]} ${messages["exiting"]}$C_NORM"
@@ -667,9 +667,9 @@ update_particld(){
 
         if [ $PARTYD_RUNNING == 1 ]; then
             pending " --> ${messages["stopping"]} partcld. ${messages["please_wait"]}"
-            $PARTY_CLI stop >/dev/null 2>&1
+            $RHOM_CLI stop >/dev/null 2>&1
             sleep 15
-            killall -9 particld particl-shutoff >/dev/null 2>&1
+            killall -9 rhombusd rhombus-shutoff >/dev/null 2>&1
             ok "${messages["done"]}"
         fi
 
@@ -677,12 +677,12 @@ update_particld(){
 
         pending " --> ${messages["removing_old_version"]}"
         rm -rf \
-            particld \
-            "particld-$CURRENT_VERSION" \
-            particl-qt \
-            "particl-qt-$CURRENT_VERSION" \
-            particl-cli \
-            "particl-cli-$CURRENT_VERSION"
+            rhombusd \
+            "rhombusd-$CURRENT_VERSION" \
+            rhombus-qt \
+            "rhombus-qt-$CURRENT_VERSION" \
+            rhombus-cli \
+            "rhombus-cli-$CURRENT_VERSION"
         #rm -rf \
         #    "$DATA_DIR"/banlist.dat \
         #    "$DATA_DIR"/peers.dat
@@ -690,45 +690,45 @@ update_particld(){
 
         # place it ---------------------------------------------------------------
 
-        mv "particl-$LATEST_VERSION/bin/particld" "particld-$LATEST_VERSION"
-        mv "particl-$LATEST_VERSION/bin/particl-cli" "particl-cli-$LATEST_VERSION"
+        mv "rhombus-$LATEST_VERSION/bin/rhombusd" "rhombusd-$LATEST_VERSION"
+        mv "rhombus-$LATEST_VERSION/bin/rhombus-cli" "rhombus-cli-$LATEST_VERSION"
         if [ $ARM != 1 ];then
-            mv "particl-$LATEST_VERSION/bin/particl-qt" "particl-qt-$LATEST_VERSION"
+            mv "rhombus-$LATEST_VERSION/bin/rhombus-qt" "rhombus-qt-$LATEST_VERSION"
         fi
-        ln -s "particld-$LATEST_VERSION" particld
-        ln -s "particl-cli-$LATEST_VERSION" particl-cli
+        ln -s "rhombusd-$LATEST_VERSION" rhombusd
+        ln -s "rhombus-cli-$LATEST_VERSION" rhombus-cli
         if [ $ARM != 1 ];then
-            ln -s "particl-qt-$LATEST_VERSION" particl-qt
+            ln -s "rhombus-qt-$LATEST_VERSION" rhombus-qt
         fi
 
         # permission it ----------------------------------------------------------
 
         if [ -n "$SUDO_USER" ]; then
-            chown -h "$USER":"$USER" {"$DOWNLOAD_FILE","${DOWNLOAD_FILE}.DIGESTS.txt",particl-cli,particld,particl-qt,particl*"$LATEST_VERSION"}
+            chown -h "$USER":"$USER" {"$DOWNLOAD_FILE","${DOWNLOAD_FILE}.DIGESTS.txt",rhombus-cli,rhombusd,rhombus-qt,rhombus*"$LATEST_VERSION"}
         fi
 
         # purge it ---------------------------------------------------------------
 
-        rm -rf "particl-${LATEST_VERSION}"
+        rm -rf "rhombus-${LATEST_VERSION}"
 
         # punch it ---------------------------------------------------------------
 
-        pending " --> ${messages["launching"]} particld... "
-        "$INSTALL_DIR/particld" -daemon > /dev/null 2>&1
+        pending " --> ${messages["launching"]} rhombusd... "
+        "$INSTALL_DIR/rhombusd" -daemon > /dev/null 2>&1
         ok "${messages["done"]}"
 
         # probe it ---------------------------------------------------------------
 
-        pending " --> ${messages["waiting_for_particld_to_respond"]}"
+        pending " --> ${messages["waiting_for_rhombusd_to_respond"]}"
         echo -en "${C_YELLOW}"
         PARTYD_RUNNING=1
         while [ $PARTYD_RUNNING == 1 ] && [ $PARTYD_RESPONDING == 0 ]; do
             echo -n "."
-            _check_particld_state
+            _check_rhombusd_state
             sleep 5
         done
         if [ $PARTYD_RUNNING == 0 ]; then
-            die "\n - particld unexpectedly quit. ${messages["exiting"]}"
+            die "\n - rhombusd unexpectedly quit. ${messages["exiting"]}"
         fi
         ok "${messages["done"]}"
 
@@ -745,16 +745,16 @@ update_particld(){
             echo -e ""
             echo -e "${C_GREEN}${messages["installed_in"]} ${INSTALL_DIR}$C_NORM"
             echo -e ""
-            ls -l --color {"$DOWNLOAD_FILE","${DOWNLOAD_FILE}.DIGESTS.txt",particl-cli,particld,particl-qt,particl*"$LATEST_VERSION"}
+            ls -l --color {"$DOWNLOAD_FILE","${DOWNLOAD_FILE}.DIGESTS.txt",rhombus-cli,rhombusd,rhombus-qt,rhombus*"$LATEST_VERSION"}
             echo -e ""
 
             quit ""
         else
-            echo -e "${C_RED}${messages["particl_version"]} $CURRENT_VERSION ${messages["is_not_uptodate"]} ($LATEST_VERSION) ${messages["exiting"]}$C_NORM"
+            echo -e "${C_RED}${messages["rhombus_version"]} $CURRENT_VERSION ${messages["is_not_uptodate"]} ($LATEST_VERSION) ${messages["exiting"]}$C_NORM"
         fi
     else
         echo -e ""
-        echo -e "${C_GREEN}${messages["particl_version"]} $CURRENT_VERSION ${messages["is_uptodate"]} ($LATEST_VERSION) ${messages["exiting"]}$C_NORM"
+        echo -e "${C_GREEN}${messages["rhombus_version"]} $CURRENT_VERSION ${messages["is_uptodate"]} ($LATEST_VERSION) ${messages["exiting"]}$C_NORM"
     fi
     exit 0
 }
@@ -765,14 +765,14 @@ stakingnode_walletinit(){
     if [ $PARTYD_RUNNING == 1 ] && [ "$PARTYD_WALLETSTATUS" != "Locked" ]; then
         pending " --> ${messages["stakingnode_init_walletcheck"]}"
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
-            die "\n - wallet already exists - 'partyman stakingnode' to view list of current staking node public keys or 'partyman stakingnode new' to create a new staking node public key. ${messages["exiting"]}"
+            die "\n - wallet already exists - 'rhomtools stakingnode' to view list of current staking node public keys or 'rhomtools stakingnode new' to create a new staking node public key. ${messages["exiting"]}"
         else
             ok "${messages["done"]}"
         fi
 
         echo
         pending " --> ${messages["stakingnode_init_walletgenerate"]}"
-        MNEMONIC=$( $PARTY_CLI mnemonic new | grep mnemonic | cut -f2 -d":" | sed 's/\ "//g' | sed 's/\",//g' )
+        MNEMONIC=$( $RHOM_CLI mnemonic new | grep mnemonic | cut -f2 -d":" | sed 's/\ "//g' | sed 's/\",//g' )
         MNEMONIC_COUNT=$(echo "$MNEMONIC" | wc -w)
         if [ "$MNEMONIC_COUNT" == 24 ]; then
             highlight "$MNEMONIC"
@@ -789,7 +789,7 @@ stakingnode_walletinit(){
         fi
 
         pending " --> ${messages["stakingnode_init_walletcreate"]}"
-        if $PARTY_CLI extkeyimportmaster "$MNEMONIC" >/dev/null 2>&1; then
+        if $RHOM_CLI extkeyimportmaster "$MNEMONIC" >/dev/null 2>&1; then
             ok "${messages["done"]}"
         else
             die "\n - failed to create new wallet ${messages["exiting"]}"
@@ -799,7 +799,7 @@ stakingnode_walletinit(){
     fi
 
     echo
-    echo -e "    ${C_YELLOW}partyman stakingnode info$C_NORM"
+    echo -e "    ${C_YELLOW}rhomtools stakingnode info$C_NORM"
     echo
 
 }
@@ -811,7 +811,7 @@ stakingnode_newpublickey(){
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
             ok "${messages["done"]}"
         else
-            die "\n - no wallet exists, please type 'partyman stakingnode init' ${messages["exiting"]}"
+            die "\n - no wallet exists, please type 'rhomtools stakingnode init' ${messages["exiting"]}"
         fi
         if [ "$PARTYD_TBALANCE" -gt 0 ]; then
             die "\n - WOAH holdup! you cannot setup coldstaking on a hotstaking wallet! ${messages["exiting"]}"
@@ -831,7 +831,7 @@ stakingnode_newpublickey(){
 
         echo
         pending " --> ${messages["stakingnode_new_publickey"]}"
-        if $PARTY_CLI getnewextaddress "stakingnode_$pubkeylabel"; then
+        if $RHOM_CLI getnewextaddress "stakingnode_$pubkeylabel"; then
             ok ""
         else
             die "\n - error creating new staking node public key! ' ${messages["exiting"]}"
@@ -850,7 +850,7 @@ stakingnode_rewardaddress(){
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
             ok "${messages["done"]}"
         else
-            die "\n - no wallet exists, please type 'partyman stakingnode init' ${messages["exiting"]}"
+            die "\n - no wallet exists, please type 'rhomtools stakingnode init' ${messages["exiting"]}"
         fi
         if [ "$PARTYD_TBALANCE" -gt 0 ]; then
             die "\n -  WOAH holdup! you cannot setup coldstaking on a hotstaking wallet! ${messages["exiting"]}"
@@ -858,7 +858,7 @@ stakingnode_rewardaddress(){
         echo
 
         pending " --> ${messages["stakingnode_reward_check"]}"
-        STAKE_OPTS=$($PARTY_CLI walletsettings stakingoptions | jq .stakingoptions)
+        STAKE_OPTS=$($RHOM_CLI walletsettings stakingoptions | jq .stakingoptions)
         if [ "$STAKE_OPTS" == "\"default\"" ]; then
             STAKE_OPTS="{}"
         fi
@@ -884,7 +884,7 @@ stakingnode_rewardaddress(){
             exit 0
         fi
 
-        pending "Particl Address to send all rewards to : "
+        pending "Rhombus Address to send all rewards to : "
         read -r rewardAddress
 
         echo
@@ -899,7 +899,7 @@ stakingnode_rewardaddress(){
         fi
 
         echo
-        if "$PARTY_CLI" walletsettings stakingoptions "$STAKE_OPTS"; then
+        if "$RHOM_CLI" walletsettings stakingoptions "$STAKE_OPTS"; then
             ok ""
         else
             die "\n - error setting the reward address! ' ${messages["exiting"]}"
@@ -918,7 +918,7 @@ stakingnode_smsgfeeratetarget(){
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
             ok "${messages["done"]}"
         else
-            die "\n - no wallet exists, please type 'partyman stakingnode init' ${messages["exiting"]}"
+            die "\n - no wallet exists, please type 'rhomtools stakingnode init' ${messages["exiting"]}"
         fi
         if [ "$PARTYD_TBALANCE" -gt 0 ]; then
             die "\n -  WOAH holdup! you cannot setup coldstaking on a hotstaking wallet! ${messages["exiting"]}"
@@ -926,7 +926,7 @@ stakingnode_smsgfeeratetarget(){
         echo
 
         pending " --> ${messages["stakingnode_smsgfeerate_check"]}"
-        STAKE_OPTS=$($PARTY_CLI walletsettings stakingoptions | jq .stakingoptions)
+        STAKE_OPTS=$($RHOM_CLI walletsettings stakingoptions | jq .stakingoptions)
         if [ "$STAKE_OPTS" == "\"default\"" ]; then
             STAKE_OPTS="{}"
         fi
@@ -953,7 +953,7 @@ stakingnode_smsgfeeratetarget(){
         fi
 
         echo ""
-        pending "** partyman recommends a smsg fee rate of : "
+        pending "** rhomtools recommends a smsg fee rate of : "
         highlight "0.00020000"
         echo ""
         pending "Amount to adjust the smsg fee rate towards : "
@@ -971,7 +971,7 @@ stakingnode_smsgfeeratetarget(){
         fi
 
         echo
-        if "$PARTY_CLI" walletsettings stakingoptions "$STAKE_OPTS"; then
+        if "$RHOM_CLI" walletsettings stakingoptions "$STAKE_OPTS"; then
             ok ""
         else
             die "\n - error setting the smsg fee rate target! ' ${messages["exiting"]}"
@@ -991,16 +991,16 @@ stakingnode_info(){
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
             ok "${messages["done"]}"
         else
-            die "\n - no wallet exists, please type 'partyman stakingnode init' ${messages["exiting"]}"
+            die "\n - no wallet exists, please type 'rhomtools stakingnode init' ${messages["exiting"]}"
         fi
 
-        ACCOUNTID=$( $PARTY_CLI extkey account | grep "\"id"\" | cut -f2 -d":" | sed 's/\ "//g' | sed 's/\",//g' )
+        ACCOUNTID=$( $RHOM_CLI extkey account | grep "\"id"\" | cut -f2 -d":" | sed 's/\ "//g' | sed 's/\",//g' )
 
         echo
         FOUNDSTAKINGNODEKEY=0
         for ID in $ACCOUNTID;
         do
-            IDINFO=$($PARTY_CLI extkey key "$ID" true 2>&-)
+            IDINFO=$($RHOM_CLI extkey key "$ID" true 2>&-)
             IDINFO_LABEL=$( echo "$IDINFO" | jq -r .label)
             if echo "$IDINFO_LABEL" | grep -q "stakingnode"; then
                 IDINFO_PUBKEY=$( echo "$IDINFO" | jq -r .epkey)
@@ -1017,7 +1017,7 @@ stakingnode_info(){
         done
 
         if [ $FOUNDSTAKINGNODEKEY == 0 ] || [ -z $FOUNDSTAKINGNODEKEY ]; then
-            die " - no staking node public keys found, please type 'partyman stakingnode new' to create one. ${messages["exiting"]}"
+            die " - no staking node public keys found, please type 'rhomtools stakingnode new' to create one. ${messages["exiting"]}"
         fi
     else
         die "\n - wallet is locked! Please unlock first. ${messages["exiting"]}"
@@ -1054,7 +1054,7 @@ stakingnode_stats(){
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
             ok "${messages["done"]}"
         else
-            die "\n - no wallet exists, please type 'partyman stakingnode init' ${messages["exiting"]}"
+            die "\n - no wallet exists, please type 'rhomtools stakingnode init' ${messages["exiting"]}"
         fi
         if [ ! "$LATEST_VERSION" == "$CURRENT_VERSION" ]; then
             die "\n - please upgrade to the latest version! ${messages["exiting"]}"
@@ -1073,8 +1073,8 @@ stakingnode_stats(){
         "${messages["stakingnode_stats_indent"]}" "DAY" "# STAKES" "TOTAL STAKED"
 
         until [ $COUNTER -gt "$DAY" ]; do
-            NUMBER_OF_STAKES=$( $PARTY_CLI filtertransactions "{\"from\":\"$YEAR-$MONTH-$COUNTER\", \"to\":\"$YEAR-$MONTH-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.records)
-            STAKE_AMOUNT=$( $PARTY_CLI filtertransactions "{\"from\":\"$YEAR-$MONTH-$COUNTER\", \"to\":\"$YEAR-$MONTH-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.total_reward)
+            NUMBER_OF_STAKES=$( $RHOM_CLI filtertransactions "{\"from\":\"$YEAR-$MONTH-$COUNTER\", \"to\":\"$YEAR-$MONTH-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.records)
+            STAKE_AMOUNT=$( $RHOM_CLI filtertransactions "{\"from\":\"$YEAR-$MONTH-$COUNTER\", \"to\":\"$YEAR-$MONTH-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.total_reward)
 
             printf '%-4s %-15s %-30s %-12s\n' \
             "${messages["stakingnode_stats_indent"]}" "$COUNTER" "$NUMBER_OF_STAKES" "$STAKE_AMOUNT"
@@ -1090,8 +1090,8 @@ stakingnode_stats(){
 
         COUNTER=12
         until [ $COUNTER == 0 ]; do
-            NUMBER_OF_STAKES=$( $PARTY_CLI filtertransactions "{\"from\":\"$YEAR-$COUNTER\", \"to\":\"$YEAR-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.records)
-            STAKE_AMOUNT=$( $PARTY_CLI filtertransactions "{\"from\":\"$YEAR-$COUNTER\", \"to\":\"$YEAR-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.total_reward)
+            NUMBER_OF_STAKES=$( $RHOM_CLI filtertransactions "{\"from\":\"$YEAR-$COUNTER\", \"to\":\"$YEAR-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.records)
+            STAKE_AMOUNT=$( $RHOM_CLI filtertransactions "{\"from\":\"$YEAR-$COUNTER\", \"to\":\"$YEAR-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.total_reward)
             if [[ $NUMBER_OF_STAKES != 0 ]] && [[ $STAKE_AMOUNT != 0 ]]; then
                 printf '%-4s %-15s %-30s %-12s\n' \
                 "${messages["stakingnode_stats_indent"]}" "$COUNTER ($YEAR)" "$NUMBER_OF_STAKES" "$STAKE_AMOUNT"
@@ -1104,8 +1104,8 @@ stakingnode_stats(){
 		echo
         	COUNTER=12
         	until [ $COUNTER == 0 ]; do
-        	    NUMBER_OF_STAKES=$( $PARTY_CLI filtertransactions "{\"from\":\"$YEAR-$COUNTER\", \"to\":\"$YEAR-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.records)
-            	STAKE_AMOUNT=$( $PARTY_CLI filtertransactions "{\"from\":\"$YEAR-$COUNTER\", \"to\":\"$YEAR-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.total_reward)
+        	    NUMBER_OF_STAKES=$( $RHOM_CLI filtertransactions "{\"from\":\"$YEAR-$COUNTER\", \"to\":\"$YEAR-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.records)
+            	STAKE_AMOUNT=$( $RHOM_CLI filtertransactions "{\"from\":\"$YEAR-$COUNTER\", \"to\":\"$YEAR-$COUNTER\",\"count\":100000,\"category\":\"stake\",\"collate\":true,\"include_watchonly\":true,\"with_reward\":true}" | jq .collated.total_reward)
             	if [[ $NUMBER_OF_STAKES != 0 ]] && [[ $STAKE_AMOUNT != 0 ]]; then
                 	printf '%-4s %-15s %-30s %-12s\n' \
                 	"${messages["stakingnode_stats_indent"]}" "$COUNTER ($YEAR)" "$NUMBER_OF_STAKES" "$STAKE_AMOUNT"
@@ -1128,10 +1128,10 @@ stakingnode_proposallist(){
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
             ok "${messages["done"]}"
         else
-            die "\n - no wallet exists, please type 'partyman stakingnode init' ${messages["exiting"]}"
+            die "\n - no wallet exists, please type 'rhomtools stakingnode init' ${messages["exiting"]}"
         fi
 
-        PROPOSAL_DOWNLOAD_URL="https://raw.githubusercontent.com/particlcommunity/particl-proposals/master/testnet/metadata.txt"
+        PROPOSAL_DOWNLOAD_URL="https://raw.githubusercontent.com/rhombuscommunity/rhombus-proposals/master/testnet/metadata.txt"
         echo
 
         pending " --> ${messages["proposal_get_active"]}"
@@ -1174,11 +1174,11 @@ stakingnode_proposalvote(){
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
             ok "${messages["done"]}"
         else
-            die "\n - no wallet exists, please type 'partyman stakingnode init' ${messages["exiting"]}"
+            die "\n - no wallet exists, please type 'rhomtools stakingnode init' ${messages["exiting"]}"
         fi
 
         if [ ! -e "proposal" ] ; then
-            die "\n - no proposal data exists, please type 'partyman proposal list' ${messages["exiting"]}"
+            die "\n - no proposal data exists, please type 'rhomtools proposal list' ${messages["exiting"]}"
         fi
 
         echo
@@ -1203,7 +1203,7 @@ stakingnode_proposalvote(){
             die "\n - not a valid proposal id! ' ${messages["exiting"]}"
         fi
 
-        PARTYD_CURRENT_BLOCK=$("$PARTY_CLI" getblockcount 2>/dev/null)
+        PARTYD_CURRENT_BLOCK=$("$RHOM_CLI" getblockcount 2>/dev/null)
         if [ -z "$PARTYD_CURRENT_BLOCK" ] ; then PARTYD_CURRENT_BLOCK=0 ; fi
 
         if [ "$PARTYD_CURRENT_BLOCK" -gt "$PROPOSAL_HEIGHT_END" ]; then
@@ -1227,7 +1227,7 @@ stakingnode_proposalvote(){
             proposalid=0
         fi
 
-        if "$PARTY_CLI" setvote "$proposalid" "$proposaloption" "$PROPOSAL_HEIGHT_START" "$PROPOSAL_HEIGHT_END"; then
+        if "$RHOM_CLI" setvote "$proposalid" "$proposaloption" "$PROPOSAL_HEIGHT_START" "$PROPOSAL_HEIGHT_END"; then
             ok ""
         else
             die "\n - error setting vote! ' ${messages["exiting"]}"
@@ -1246,11 +1246,11 @@ stakingnode_proposaltally(){
         if [ ! "$PARTYD_WALLET"  == "null" ]; then
             ok "${messages["done"]}"
         else
-            die "\n - no wallet exists, please type 'partyman stakingnode init' ${messages["exiting"]}"
+            die "\n - no wallet exists, please type 'rhomtools stakingnode init' ${messages["exiting"]}"
         fi
 
         if [ ! -e "proposal" ] ; then
-            die "\n - no proposal data exists, please type 'partyman proposal list' ${messages["exiting"]}"
+            die "\n - no proposal data exists, please type 'rhomtools proposal list' ${messages["exiting"]}"
         fi
 
         echo
@@ -1272,7 +1272,7 @@ stakingnode_proposaltally(){
 
         pending "checking blockchain for voting data ... "
         echo
-        if "$PARTY_CLI" tallyvotes "$proposalid" "$PROPOSAL_HEIGHT_START" "$PROPOSAL_HEIGHT_END"; then
+        if "$RHOM_CLI" tallyvotes "$proposalid" "$PROPOSAL_HEIGHT_START" "$PROPOSAL_HEIGHT_END"; then
             ok ""
         else
             die "\n - error getting vote details! ' ${messages["exiting"]}"
@@ -1308,9 +1308,9 @@ configure_firewall(){
         $FIREWALL_CLI default deny
         $FIREWALL_CLI logging on
         $FIREWALL_CLI allow $SSH_PORT/tcp
-        $FIREWALL_CLI allow 8080/tcp comment 'partyman webserver'
-        $FIREWALL_CLI allow 51738/tcp comment 'particl p2p mainnet'
-        $FIREWALL_CLI allow 51938/tcp comment 'particl p2p testnet'
+        $FIREWALL_CLI allow 8080/tcp comment 'rhomtools webserver'
+        $FIREWALL_CLI allow 51738/tcp comment 'rhombus p2p mainnet'
+        $FIREWALL_CLI allow 51938/tcp comment 'rhombus p2p testnet'
 
         # This will only allow 6 connections every 30 seconds from the same IP address.
         $FIREWALL_CLI limit OpenSSH
@@ -1346,28 +1346,28 @@ firewall_reset(){
     fi
 }
 
-_get_particld_proc_status(){
+_get_rhombusd_proc_status(){
     PARTYD_HASPID=0
-    if [ -e "$INSTALL_DIR/particl.pid" ] ; then
-        PARTYD_HASPID=$(ps --no-header "$(cat "$INSTALL_DIR/particl.pid" 2>/dev/null)" | wc -l);
+    if [ -e "$INSTALL_DIR/rhombus.pid" ] ; then
+        PARTYD_HASPID=$(ps --no-header "$(cat "$INSTALL_DIR/rhombus.pid" 2>/dev/null)" | wc -l);
     else
-        if ! PARTYD_HASPID=$(pidof "$INSTALL_DIR/particld"); then
+        if ! PARTYD_HASPID=$(pidof "$INSTALL_DIR/rhombusd"); then
             PARTYD_HASPID=0
         fi
     fi
-    PARTYD_PID=$(pidof "$INSTALL_DIR/particld")
+    PARTYD_PID=$(pidof "$INSTALL_DIR/rhombusd")
 }
 
-get_particld_status(){
+get_rhombusd_status(){
 
-    _get_particld_proc_status
+    _get_rhombusd_proc_status
 
-    PARTYD_UPTIME=$($PARTY_CLI uptime 2>/dev/null)
+    PARTYD_UPTIME=$($RHOM_CLI uptime 2>/dev/null)
     if [ -z "$PARTYD_UPTIME" ] ; then PARTYD_UPTIME=0 ; fi
 
     PARTYD_LISTENING=$(netstat -nat | grep LIST | grep -c 51738);
     PARTYD_CONNECTIONS=$(netstat -nat | grep ESTA | grep -c 51738);
-    PARTYD_CURRENT_BLOCK=$("$PARTY_CLI" getblockcount 2>/dev/null)
+    PARTYD_CURRENT_BLOCK=$("$RHOM_CLI" getblockcount 2>/dev/null)
     if [ -z "$PARTYD_CURRENT_BLOCK" ] ; then PARTYD_CURRENT_BLOCK=0 ; fi
 
 
@@ -1376,7 +1376,7 @@ get_particld_status(){
         WEB_BLOCK_COUNT_CHAINZ=0
     fi
 
-    WEB_BLOCK_COUNT_PART=$($curl_cmd https://explorer.particl.io/particl-insight-api/sync 2>/dev/null | jq -r .blockChainHeight)
+    WEB_BLOCK_COUNT_PART=$($curl_cmd https://explorer.rhombus.io/rhombus-insight-api/sync 2>/dev/null | jq -r .blockChainHeight)
     if [ -z "$WEB_BLOCK_COUNT_PART" ]; then
         WEB_BLOCK_COUNT_PART=0
     fi
@@ -1407,7 +1407,7 @@ get_particld_status(){
 
     #staking info
     if [ $PARTYD_RUNNING == 1 ]; then
-        PARTYD_GETSTAKINGINFO=$($PARTY_CLI getstakinginfo 2>/dev/null);
+        PARTYD_GETSTAKINGINFO=$($RHOM_CLI getstakinginfo 2>/dev/null);
         STAKING_ENABLED=$(echo "$PARTYD_GETSTAKINGINFO" | grep enabled | awk '{print $2}' | sed -e 's/[",]//g')
         if [ "$STAKING_ENABLED" == "true" ]; then STAKING_ENABLED=1; elif [ $STAKING_ENABLED == "false" ]; then STAKING_ENABLED=0; fi
         STAKING_CURRENT=$(echo "$PARTYD_GETSTAKINGINFO" | grep staking | awk '{print $2}' | sed -e 's/[",]//g')
@@ -1426,7 +1426,7 @@ get_particld_status(){
         T_PARTYD_STAKEWEIGHT=$(printf "%'.0f" $PARTYD_STAKEWEIGHT)
         PARTYD_STAKEWEIGHTLINE="$T_PARTYD_STAKEWEIGHT ($STAKEWEIGHTPERCENTAGE)"
 
-        PARTYD_GETCOLDSTAKINGINFO=$($PARTY_CLI getcoldstakinginfo 2>/dev/null);
+        PARTYD_GETCOLDSTAKINGINFO=$($RHOM_CLI getcoldstakinginfo 2>/dev/null);
         CSTAKING_ENABLED=$(echo "$PARTYD_GETCOLDSTAKINGINFO" | grep enabled | awk '{print $2}' | sed -e 's/[",]//g')
         CSTAKING_CURRENT=$(echo "$PARTYD_GETCOLDSTAKINGINFO" | grep currently_staking | awk '{print $2}' | sed -e 's/[",]//g')
         CSTAKING_BALANCE=$(echo "$PARTYD_GETCOLDSTAKINGINFO" | grep coin_in_coldstakeable_script | awk '{print $2}' | sed -e 's/[",]//g')
@@ -1492,8 +1492,8 @@ get_host_status(){
 print_getinfo() {
 
     if [ $PARTYD_RUNNING == 1 ]; then
-        $PARTY_CLI -getinfo
-        $PARTY_CLI getwalletinfo
+        $RHOM_CLI -getinfo
+        $RHOM_CLI getwalletinfo
     fi
 }
 
@@ -1501,8 +1501,8 @@ print_status() {
 
     pending "${messages["status_hostnam"]}" ; ok "$HOSTNAME"
     pending "${messages["status_uptimeh"]}" ; ok "$HOST_UPTIME_DAYS ${messages["days"]}, $HOST_LOAD_AVERAGE"
-    pending "${messages["status_particldip"]}" ; if [ "$PUBLIC_IPV4" != "none" ] ; then ok "$PUBLIC_IPV4" ; else err "$PUBLIC_IPV4" ; fi
-    pending "${messages["status_particldve"]}" ; ok "$CURRENT_VERSION"
+    pending "${messages["status_rhombusdip"]}" ; if [ "$PUBLIC_IPV4" != "none" ] ; then ok "$PUBLIC_IPV4" ; else err "$PUBLIC_IPV4" ; fi
+    pending "${messages["status_rhombusdve"]}" ; ok "$CURRENT_VERSION"
     pending "${messages["status_uptodat"]}" ; if [ "$PARTYD_UP_TO_DATE"      -gt 0 ] ; then ok "${messages["YES"]}" ; else err "$PARTYD_UP_TO_DATE_STATUS ($LATEST_VERSION)" ; fi
     pending "${messages["status_running"]}" ; if [ "$PARTYD_HASPID"          -gt 0 ] ; then ok "${messages["YES"]}" ; else err "${messages["NO"]}" ; fi
     pending "${messages["status_uptimed"]}" ; if [ "$PARTYD_UPTIME"          -gt 0 ] ; then ok "$(displaytime $PARTYD_UPTIME)" ; else err "${messages["NO"]}" ; fi
@@ -1529,16 +1529,16 @@ print_status() {
     if [ "$PUBLIC_PORT_CLOSED"  -gt 0 ]; then
        echo
        highlight "* Inbound P2P Port is not open - this is okay and will not affect the function of this staking node."
-       highlight "  However by opening port 51738/tcp you can provide full resources to the Particl Network by acting as a 'full node'."
+       highlight "  However by opening port 51738/tcp you can provide full resources to the Rhombus Network by acting as a 'full node'."
        highlight "  A 'full staking node' will increase the number of other nodes you connect to beyond the 16 limit."
     fi
 }
 
 show_message_configure() {
     echo
-    ok "${messages["to_start_particl"]}"
+    ok "${messages["to_start_rhombus"]}"
     echo
-    echo -e "    ${C_YELLOW}partyman restart now$C_NORM"
+    echo -e "    ${C_YELLOW}rhomtools restart now$C_NORM"
     echo
 }
 

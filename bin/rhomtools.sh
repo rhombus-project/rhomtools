@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# partyman - main executable
-# installs, updates, and manages particl daemon
+# rhomtools - main executable
+# installs, updates, and manages rhombus daemon
 
 # Copyright (c) 2015-2017 moocowmoo
 # Copyright (c) 2017 dasource
@@ -10,7 +10,7 @@
 #set -x
 
 if [ -z "$BASH_VERSION" ] || (( ${BASH_VERSION%%.*} < 4 )); then
-    echo "partyman requires bash version 4. please update. exiting." 1>&2
+    echo "rhomtools requires bash version 4. please update. exiting." 1>&2
     exit 1
 fi
 
@@ -66,7 +66,7 @@ _check_dependencies "$@"
 
 # have command, will travel... -----------------------------------------------
 
-echo -e "${C_CYAN}${messages["partyman_version"]} $PARTYMAN_VERSION$PARTYMAN_CHECKOUT${C_NORM} - ${C_GREEN}$(date)${C_NORM}"
+echo -e "${C_CYAN}${messages["rhomtools_version"]} $PARTYMAN_VERSION$PARTYMAN_CHECKOUT${C_NORM} - ${C_GREEN}$(date)${C_NORM}"
 
 # do awesome stuff -----------------------------------------------------------
 COMMAND=''
@@ -74,19 +74,19 @@ case "$1" in
         install)
             COMMAND=$1
             pending "${messages["gathering_info"]}"
-            _check_partyman_updates
+            _check_rhomtools_updates
             _get_versions
             ok " ${messages["done"]}"
             if [ -n "$2" ]; then
                 APP=$2;
                 if [ "$APP" == 'unattended' ]; then
                     UNATTENDED=1
-                    install_particld
+                    install_rhombusd
                 else
                     echo "don't know how to install: $2"
                 fi
             else
-                install_particld
+                install_rhombusd
                 show_message_configure
             fi
             quit
@@ -94,10 +94,10 @@ case "$1" in
         reinstall)
             COMMAND=$1
             pending "${messages["gathering_info"]}"
-            _check_partyman_updates
-            _find_particl_directory
+            _check_rhomtools_updates
+            _find_rhombus_directory
             _get_versions
-            _check_particld_state
+            _check_rhombusd_state
             REINSTALL=1
             if [ -n "$2" ]; then
                 if [ "$2" == '-prer' ]; then
@@ -106,15 +106,15 @@ case "$1" in
                 fi
             fi
             ok " ${messages["done"]}"
-            update_particld
+            update_rhombusd
             ;;
         update)
             COMMAND=$1
             pending "${messages["gathering_info"]}"
-            _check_partyman_updates
-            _find_particl_directory
+            _check_rhomtools_updates
+            _find_rhombus_directory
             _get_versions
-            _check_particld_state
+            _check_rhombusd_state
             ok " ${messages["done"]}"
             if [ -n "$2" ]; then
                 if [ "$2" == '-y' ] || [ "$2" == '-Y' ]; then
@@ -125,32 +125,32 @@ case "$1" in
                    _get_versions
                 fi
             fi
-            update_particld
+            update_rhombusd
             ;;
         restart)
             COMMAND=$1
-            _find_particl_directory
-            _check_particld_state
+            _find_rhombus_directory
+            _check_rhombusd_state
             case "$2" in
                 now)
-                    restart_particld
+                    restart_rhombusd
                     ;;
                 *)
                     echo
-                    pending "restart particld? "
+                    pending "restart rhombusd? "
                     confirm "[${C_GREEN}y${C_NORM}/${C_RED}N${C_NORM}] $C_CYAN" && \
-                        restart_particld
+                        restart_rhombusd
                     ;;
             esac
             ;;
         status)
             COMMAND=$1
             pending "${messages["gathering_info"]}"
-            _check_partyman_updates
-            _find_particl_directory
+            _check_rhomtools_updates
+            _find_rhombus_directory
             _get_versions
-            _check_particld_state
-            get_particld_status
+            _check_rhombusd_state
+            get_rhombusd_status
             get_host_status
             ok " ${messages["done"]}"
             echo
@@ -160,10 +160,10 @@ case "$1" in
         stakingnode)
             COMMAND=$1
             pending "${messages["gathering_info"]}"
-            _check_partyman_updates
-            _find_particl_directory
+            _check_rhomtools_updates
+            _find_rhombus_directory
             _get_versions
-            _check_particld_state
+            _check_rhombusd_state
             ok " ${messages["done"]}"
             if [ -n "$2" ]; then
                 APP=$2;
@@ -189,10 +189,10 @@ case "$1" in
         proposal)
             COMMAND=$1
             pending "${messages["gathering_info"]}"
-            _check_partyman_updates
-            _find_particl_directory
+            _check_rhomtools_updates
+            _find_rhombus_directory
             _get_versions
-            _check_particld_state
+            _check_rhombusd_state
             ok " ${messages["done"]}"
             if [ -n "$2" ]; then
                 APP=$2;
@@ -229,10 +229,10 @@ case "$1" in
         getinfo)
             COMMAND=$1
             pending "${messages["gathering_info"]}"
-            _check_partyman_updates
-            _find_particl_directory
+            _check_rhomtools_updates
+            _find_rhombus_directory
             _get_versions
-            _check_particld_state
+            _check_rhombusd_state
             ok " ${messages["done"]}"
             echo
             print_getinfo
